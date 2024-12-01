@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Viewer</title>
+    <style>
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<h1>Data Viewer</h1>
+<pre id="json-display"></pre>
+<script>
+    // JSON 데이터를 안전하게 렌더링
+    const data = JSON.parse('{{ data | tojson | safe }}');
+    const formattedData = JSON.stringify(data, null, 4);
+    document.getElementById("json-display").innerText = formattedData;
+</script>
+</body>
+</html>
