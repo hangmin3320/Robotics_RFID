@@ -7,7 +7,6 @@
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
-// UID와 이름 매핑
 struct UIDMapping {
     String uid;
     String name;
@@ -16,6 +15,11 @@ struct UIDMapping {
 UIDMapping allowedUsers[] = {
     {"832A6310", "hangmin"},  // UID와 이름 매핑
     {"33C3D5F", "Test"}
+};
+
+// 거부된 사용자 명단
+UIDMapping deniedUsers[] = {
+    {"444E9A9", "hoon"}  // UID와 이름 매핑
 };
 
 void setup() {
@@ -36,14 +40,26 @@ void loop() {
     }
     uid.toUpperCase();  // UID를 대문자로 변환
 
-    // 허가 여부 확인
+    // 허가 및 거부 여부 확인
     String userName = findNameByUID(uid);
-    bool isAllowed = userName != "";
+    String deniedUserName = findDeniedNameByUID(uid);
+    bool isDenied = deniedUserName != "";
+    bool isAllowed = (!isDenied && userName != "");
 
     // JSON 데이터 생성
     StaticJsonDocument<256> jsonDoc;  // JSON 문서 객체
     jsonDoc["uid"] = uid;
-    jsonDoc["user"] = isAllowed ? userName : "Unknown";
+
+    // JSON user 필드 설정
+    if (isDenied) {
+        jsonDoc["user"] = deniedUserName;  // 거부된 사용자 이름
+    } else if (isAllowed) {
+        jsonDoc["user"] = userName;  // 허가된 사용자 이름
+    } else {
+        jsonDoc["user"] = "Unknown";  // 알 수 없는 사용자
+    }
+
+    // JSON access 필드 설정
     jsonDoc["access"] = isAllowed ? "Authorized" : "Denied";
 
     // JSON 문자열로 출력
@@ -52,16 +68,18 @@ void loop() {
     Serial.println(jsonOutput);
 
     if (isAllowed) {
-        grantAccess();  // 출입 허가 동작 (예: 문 열기)
+        grantAccess();
+    } else if (isDenied) {
+        denyAccess("Denied User");  // 거부된 사용자 처리
     } else {
-        denyAccess();  // 출입 거부 동작 (예: 경고음)
+        denyAccess("Unknown User");  // Unknown 사용자 처리
     }
 
     mfrc522.PICC_HaltA(); // 태그 멈춤
     delay(1000);          // 딜레이
 }
 
-// UID로 이름 찾기
+// 허가된 사용자 이름 찾기
 String findNameByUID(String uid) {
     for (int i = 0; i < sizeof(allowedUsers) / sizeof(allowedUsers[0]); i++) {
         if (uid == allowedUsers[i].uid) {
@@ -71,10 +89,22 @@ String findNameByUID(String uid) {
     return ""; // UID가 매칭되지 않으면 빈 문자열 반환
 }
 
-void grantAccess() {
-    // 여기서 릴레이, 서보 모터 등을 제어
+// 거부된 사용자 이름 찾기
+String findDeniedNameByUID(String uid) {
+    for (int i = 0; i < sizeof(deniedUsers) / sizeof(deniedUsers[0]); i++) {
+        if (uid == deniedUsers[i].uid) {
+            return deniedUsers[i].name;
+        }
+    }
+    return ""; // UID가 매칭되지 않으면 빈 문자열 반환
 }
 
-void denyAccess() {
-    // 여기서 부저 제어
+// 출입 허가 동작
+void grantAccess() {
+
+}
+
+// 출입 거부 동작
+void denyAccess(String reason) {
+
 }
