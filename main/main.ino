@@ -5,8 +5,8 @@
 
 #define RST_PIN 9
 #define SS_PIN 10
-#define ANGLE_OPEN 0
-#define ANGLE_CLOSED 180
+#define ANGLE_OPEN 90
+#define ANGLE_CLOSED 150
 
 const int redPin = 4;    // 빨강 LED 핀
 const int bluePin = 3;   // 녹색 LED 핀
