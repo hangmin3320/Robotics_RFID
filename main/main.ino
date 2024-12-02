@@ -1,14 +1,19 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <ArduinoJson.h>  // ArduinoJson 라이브러리
+#include <Servo.h>
 
 #define RST_PIN 9
 #define SS_PIN 10
+#define ANGLE_OPEN 0
+#define ANGLE_CLOSED 180
 
 const int redPin = 4;    // 빨강 LED 핀
 const int bluePin = 3;   // 녹색 LED 핀
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
+
+Servo servo;
 
 struct UIDMapping {
     String uid;
@@ -31,6 +36,8 @@ void setup() {
     mfrc522.PCD_Init();
     pinMode(redPin, OUTPUT);
     pinMode(bluePin, OUTPUT);
+    servo.attach(6);
+    servo.write(ANGLE_CLOSED);
 }
 
 void loop() {
@@ -108,20 +115,17 @@ String findDeniedNameByUID(String uid) {
 void grantAccess() {
   digitalWrite(bluePin, HIGH);
   digitalWrite(redPin, LOW);  // 녹색은 끔
-  delay(1000);                 // 1초 대기 (1000ms)
-
-  // 녹색 LED 끄기
-  digitalWrite(bluePin, LOW);
-  delay(1000);       
+  servo.write(ANGLE_OPEN);
+  delay(2000);                 // 2초 대기
+  servo.write(ANGLE_CLOSED);
+  digitalWrite(bluePin, LOW);   
 }
 
 // 출입 거부 동작
 void denyAccess(String reason) {
   digitalWrite(redPin, HIGH);
   digitalWrite(bluePin, LOW);  // 파란색은 끔
-  delay(1000);                 // 1초 대기 (1000ms)
+  delay(2000);                 // 2초 대기
 
-  // 빨간색 LED 끄기
-  digitalWrite(redPin, LOW);
-  delay(1000);       
+  digitalWrite(redPin, LOW);    
 }
