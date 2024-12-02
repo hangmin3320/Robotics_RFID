@@ -41,3 +41,9 @@ def store_data(data: RFIDData):
 async def get_data(request: Request):
     data_to_render = [data.dict() for data in rfid_data_storage]
     return templates.TemplateResponse("data.html", {"request": request, "data": data_to_render})
+
+
+@app.delete("/delete-data/")
+async def delete_data():
+    rfid_data_storage.clear()
+    return {"message": "All data deleted successfully", "status code": 200}
