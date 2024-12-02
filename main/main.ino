@@ -5,6 +5,9 @@
 #define RST_PIN 9
 #define SS_PIN 10
 
+const int redPin = 4;    // 빨강 LED 핀
+const int bluePin = 3;   // 녹색 LED 핀
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 struct UIDMapping {
@@ -26,6 +29,8 @@ void setup() {
     Serial.begin(9600);
     SPI.begin();
     mfrc522.PCD_Init();
+    pinMode(redPin, OUTPUT);
+    pinMode(bluePin, OUTPUT);
 }
 
 void loop() {
@@ -101,10 +106,22 @@ String findDeniedNameByUID(String uid) {
 
 // 출입 허가 동작
 void grantAccess() {
+  digitalWrite(bluePin, HIGH);
+  digitalWrite(redPin, LOW);  // 녹색은 끔
+  delay(1000);                 // 1초 대기 (1000ms)
 
+  // 녹색 LED 끄기
+  digitalWrite(bluePin, LOW);
+  delay(1000);       
 }
 
 // 출입 거부 동작
 void denyAccess(String reason) {
+  digitalWrite(redPin, HIGH);
+  digitalWrite(bluePin, LOW);  // 파란색은 끔
+  delay(1000);                 // 1초 대기 (1000ms)
 
+  // 빨간색 LED 끄기
+  digitalWrite(redPin, LOW);
+  delay(1000);       
 }
