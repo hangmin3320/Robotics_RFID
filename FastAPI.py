@@ -5,29 +5,39 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 데이터를 저장할 리스트
-data_storage = []
+# RFID 데이터 저장소
+rfid_data_storage = []
+
+# 템플릿 디렉터리 경로
+TEMPLATES_DIRECTORY = "/Users/johangmin/Desktop/Dev/GCU/1/Robotics/RFID_Project/templates"
 
 # Jinja2 템플릿 설정
-templates = Jinja2Templates(directory="/Users/johangmin/Desktop/Dev/GCU/1/Robotics/RFID_Project/templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIRECTORY)
 
 
 class RFIDData(BaseModel):
     id: str
     name: str
     received_at: str
-    access_granted: bool  # 새로운 필드 추가
+    access_granted: bool
 
 
 @app.post("/receive-data/")
 async def receive_data(data: RFIDData):
-    print("Received data:", data)
-    data_storage.append(data)
+    log_received_data(data)
+    store_data(data)
     return {"message": "Data received successfully", "status code": 200}
+
+
+def log_received_data(data: RFIDData):
+    print("Received data:", data)
+
+
+def store_data(data: RFIDData):
+    rfid_data_storage.append(data)
 
 
 @app.get("/get-data/", response_class=HTMLResponse)
 async def get_data(request: Request):
-    # 각 RFIDData 객체를 딕셔너리로 변경
-    data_to_render = [data.dict() for data in data_storage]
+    data_to_render = [data.dict() for data in rfid_data_storage]
     return templates.TemplateResponse("data.html", {"request": request, "data": data_to_render})
